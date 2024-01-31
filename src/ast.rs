@@ -14,6 +14,8 @@ pub struct FnDef {
 #[derive(Debug)]
 pub enum Expr {
     Var(String),
+    DataConstr(String, Vec<Expr>),
+    FnCall(String, Vec<Expr>),
     Match(Match),
 }
 
