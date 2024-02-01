@@ -13,10 +13,10 @@ pub struct FnDef {
 
 #[derive(Debug)]
 pub enum Expr {
-    Var(String),
+    Match(Match),
     DataConstr(String, Vec<Expr>),
     FnCall(String, Vec<Expr>),
-    Match(Match),
+    Var(String),
 }
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub struct Match {
 
 #[derive(Debug)]
 pub enum Pattern {
-    Variable(String),
+    Var(String),
     Data(String, /*vars: */ Vec<String>),
 }
 
