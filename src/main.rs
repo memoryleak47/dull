@@ -7,6 +7,9 @@ pub use tokenize::*;
 mod assemble;
 pub use assemble::*;
 
+mod run;
+pub use run::*;
+
 use std::fs::File;
 use std::io::Read;
 
@@ -22,5 +25,5 @@ fn main() {
     let s = load_file("file.dull");
     let tks = tokenize(s);
     let ast = assemble(&tks);
-    dbg!(ast);
+    run(&ast);
 }
