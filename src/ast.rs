@@ -1,10 +1,4 @@
 #[derive(Debug)]
-pub struct Data {
-    pub name: String,
-    pub arity: u32,
-}
-
-#[derive(Debug)]
 pub struct FnDef {
     pub name: String,
     pub args: Vec<String>,
@@ -39,6 +33,5 @@ pub struct Arm {
 
 #[derive(Debug)]
 pub struct Ast {
-    pub datas: Vec<Data>,
     pub fns: Vec<FnDef>,
 }

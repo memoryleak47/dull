@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
-    LowerIdent(String), UpperIdent(String), Semicolon, Comma, LParen, RParen, LBrace, RBrace, Arrow,
-    Match, Fn, Data
+    LowerIdent(String), UpperIdent(String), Comma, LParen, RParen, LBrace, RBrace, Arrow,
+    Match, Fn
 }
 
 pub fn tokenize(s: String) -> Vec<Token> {
@@ -12,7 +12,6 @@ pub fn tokenize(s: String) -> Vec<Token> {
     let ident_to_token = |id: String| {
         if id == "match" { Token::Match }
         else if id == "fn" { Token::Fn }
-        else if id == "data" { Token::Data }
         else if id.chars().next().unwrap().is_uppercase() { Token::UpperIdent(id) }
         else { Token::LowerIdent(id) }
     };
@@ -33,7 +32,6 @@ pub fn tokenize(s: String) -> Vec<Token> {
         }
 
         if c.is_whitespace() { }
-        else if c == ';' { tokens.push(Token::Semicolon); }
         else if c == ',' { tokens.push(Token::Comma); }
         else if c == '(' { tokens.push(Token::LParen); }
         else if c == ')' { tokens.push(Token::RParen); }
