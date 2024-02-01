@@ -14,7 +14,7 @@ use std::fs::File;
 use std::io::Read;
 
 fn load_file(filename: &str) -> String {
-    let mut file = File::open(filename).unwrap();
+    let mut file = File::open(filename).expect("Cannot find file!");
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
@@ -22,7 +22,8 @@ fn load_file(filename: &str) -> String {
 }
 
 fn main() {
-    let s = load_file("file.dull");
+    let filename = std::env::args().nth(1).unwrap_or(String::from("file.dull"));
+    let s = load_file(&filename);
     let tks = tokenize(s);
     let ast = assemble(&tks);
     run(&ast);

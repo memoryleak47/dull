@@ -1,0 +1,18 @@
+fn add(x, y) {
+    match x {
+        Suc(z) => Suc(add(z, y)),
+        Zero => y,
+    }
+}
+
+fn one() {
+    Suc(Zero)
+}
+
+fn two() {
+    Suc(Suc(Zero))
+}
+
+fn main() {
+    add(two(), two())
+}
