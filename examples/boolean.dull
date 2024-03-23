@@ -1,0 +1,37 @@
+fn and(x, y) {
+    match x {
+        True => y,
+        False => False,
+    }
+}
+
+fn or(x, y) {
+    match x {
+        True => True,
+        False => y,
+    }
+}
+
+fn not(x) {
+    match x {
+        True => False,
+        False => True,
+    }
+}
+
+fn iff(x, y) {
+    match x {
+        True => y,
+        False => not(y),
+    }
+}
+
+fn a() { False }
+fn b() { True }
+
+fn main() {
+    iff(
+        not(or(a(), b())),
+        and(not(a()), not(b()))
+    )
+}
