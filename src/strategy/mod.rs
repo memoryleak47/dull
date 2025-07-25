@@ -7,6 +7,9 @@ use std::str::FromStr;
 mod semi;
 pub use semi::*;
 
+mod general;
+pub use general::*;
+
 mod run;
 pub use run::*;
 
@@ -21,13 +24,6 @@ pub use run::*;
 //
 // For now we simply add the rewrite "x => main(x)",
 // but later on main could return us insightful information and specialized commands (and failure options)
-
-define_language! {
-    pub enum GeneralLang {
-        Constant(Symbol),
-        "app" = App(Box<[Id]>), // (f, arg1, ...)
-    }
-}
 
 // runs the FnDef called "main".
 // Any argument to "main" is a ?-var.

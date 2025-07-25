@@ -48,13 +48,12 @@ pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<GeneralLang, ()>) -> Id {
 
     for i in 0..semi.len() {
         let new_id = match &semi[i.into()] {
-            Semi::L(GeneralLang::Constant(s)) => eg.add(GeneralLang::Constant(*s)),
-            Semi::L(GeneralLang::App(l)) => {
-                let b = l.iter().map(|x| {
-                    let y: usize = (*x).into();
-                    ids[y]
-                }).collect::<Box<[Id]>>();
-                eg.add(GeneralLang::App(b))
+            Semi::L(l) => {
+                let mut l = l.clone();
+                for x in l.children_mut() {
+                    *x = ids[usize::from(*x)];
+                }
+                eg.add(l)
             },
             Semi::Class(c) => (*c).into(),
         };
