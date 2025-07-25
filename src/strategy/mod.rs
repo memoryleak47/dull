@@ -7,6 +7,18 @@ use std::str::FromStr;
 mod run;
 pub use run::*;
 
+// basic idea:
+// We write a dull function "main" with one argument (representing the term we e-match over).
+// def main(x) {
+//     match x {
+//       Suc(Dec(a)) => a,
+//       _ => x,
+//     }
+// }
+//
+// For now we simply add the rewrite "x => main(x)",
+// but later on main could return us insightful information and specialized commands (and failure options)
+
 define_language! {
     pub enum GeneralLang {
         Constant(Symbol),
@@ -51,13 +63,8 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         limit: usize,
     ) -> Option<SearchMatches<'_, GeneralLang>> { todo!() }
 
-    fn vars(&self) -> Vec<Var> {
-        for x in &self.ast.fns {
-            if x.name != "main" { continue }
-            return x.args.iter().map(|x| Var::from_str(&*x).unwrap()).collect();
-        }
-        panic!("mo main FnDef found!")
-    }
+    // I'm not using egg variables at all!
+    fn vars(&self) -> Vec<Var> { Vec::new() }
 }
 
 impl Applier<GeneralLang, ()> for DullApplier {
