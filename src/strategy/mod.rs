@@ -4,6 +4,9 @@ use std::sync::mpsc::*;
 use std::sync::Mutex;
 use std::str::FromStr;
 
+mod semi;
+pub use semi::*;
+
 mod run;
 pub use run::*;
 
@@ -99,7 +102,7 @@ impl Applier<GeneralLang, ()> for DullApplier {
         rule_name: Symbol,
     ) -> Vec<Id> {
         let info = self.receiver.lock().unwrap().recv().unwrap();
-        let mut out = Vec::new();
+        let mut out = Vec::new(); // this "out" technically doesn't cover newly added subterms, but I don't think I care.
         for [x, y] in info.eqs {
             let x = add_semi(x, egraph);
             let y = add_semi(y, egraph);
@@ -112,5 +115,17 @@ impl Applier<GeneralLang, ()> for DullApplier {
 }
 
 pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<GeneralLang, ()>) -> Id {
-    todo!()
+    let mut ids: Vec<Id> = Vec::new();
+    for i in 0..semi.len() {
+        let new_id = match &semi[i.into()] {
+            Semi::L(GeneralLang::Constant(s)) => eg.add(GeneralLang::Constant(*s)),
+            Semi::L(GeneralLang::App(l)) => {
+               todo!()
+            },
+            Semi::Class(c) => (*c).into(),
+            _ => todo!(),
+        };
+        ids.push(new_id);
+    }
+    *ids.last().unwrap()
 }

@@ -2,12 +2,6 @@ use crate::*;
 
 pub type ValueId = usize;
 
-define_language! {
-    pub enum Semi {
-        Class(usize), // this usize is conceptually an `Id`!
-        "term" = L(Id),
-    }
-}
 
 // TODO: open question:
 // Should sigma only map pvars from main, or generally any variable from context?
