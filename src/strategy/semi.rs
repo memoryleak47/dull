@@ -42,4 +42,24 @@ impl Language for Semi {
     }
 }
 
+pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<GeneralLang, ()>) -> Id {
+    // maps "semi indices" to "e-graph indices".
+    let mut ids: Vec<Id> = Vec::new();
+
+    for i in 0..semi.len() {
+        let new_id = match &semi[i.into()] {
+            Semi::L(GeneralLang::Constant(s)) => eg.add(GeneralLang::Constant(*s)),
+            Semi::L(GeneralLang::App(l)) => {
+                let b = l.iter().map(|x| {
+                    let y: usize = (*x).into();
+                    ids[y]
+                }).collect::<Box<[Id]>>();
+                eg.add(GeneralLang::App(b))
+            },
+            Semi::Class(c) => (*c).into(),
+        };
+        ids.push(new_id);
+    }
+    *ids.last().unwrap()
+}
 
