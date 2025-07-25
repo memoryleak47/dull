@@ -10,6 +10,9 @@ pub use assemble::*;
 mod run;
 pub use run::*;
 
+mod strategy;
+pub use strategy::*;
+
 use std::fs::File;
 use std::io::Read;
 
