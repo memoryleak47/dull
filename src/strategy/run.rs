@@ -50,5 +50,12 @@ pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
 }
 
 pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
-    todo!()
+    let f = ast.fns.iter().find(|x| x.name == name).unwrap();
+
+    let mut sigma = Sigma::new();
+    for (a, v) in f.args.iter().zip(args.iter()) {
+        sigma.insert(a.clone(), *v);
+    }
+
+    eg_eval(&f.expr, ast, sigma, deref, eg)
 }
