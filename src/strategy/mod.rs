@@ -38,7 +38,9 @@ struct DullApplier {
     receiver: Mutex<Receiver<DullInfo>>,
 }
 
-struct DullInfo;
+struct DullInfo {
+    eqs: Vec<[RecExpr<Semi>; 2]>,
+}
 
 pub fn mk_dull_rewrite(a: Ast) -> Rewrite<GeneralLang, ()> {
     let (sender, receiver) = channel::<DullInfo>();
@@ -68,9 +70,19 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         sigma.insert("x".to_string(), 0);
         let mut re = RecExpr::default();
         re.add(Semi::Class(usize::from(eclass)));
-        deref.insert(0, re);
-        let _ = eval(&expr, &self.ast, sigma, deref, egraph);
-        todo!()
+        deref.insert(0, re.clone());
+        let o = eval(&expr, &self.ast, sigma, deref, egraph);
+
+        let mut eqs = Vec::new();
+        for (_, _, x) in o {
+            eqs.push([re.clone(), x]);
+        }
+        self.sender.lock().unwrap().send(DullInfo { eqs });
+        Some(SearchMatches {
+            eclass,
+            substs: vec![Subst::default()],
+            ast: None,
+        })
     }
 
     // I'm not using egg variables at all!
@@ -85,5 +97,20 @@ impl Applier<GeneralLang, ()> for DullApplier {
         subst: &Subst,
         searcher_ast: Option<&PatternAst<GeneralLang>>,
         rule_name: Symbol,
-    ) -> Vec<Id> { todo!() }
+    ) -> Vec<Id> {
+        let info = self.receiver.lock().unwrap().recv().unwrap();
+        let mut out = Vec::new();
+        for [x, y] in info.eqs {
+            let x = add_semi(x, egraph);
+            let y = add_semi(y, egraph);
+            out.push(x);
+            out.push(y);
+            egraph.union(x, y);
+        }
+        out
+    }
+}
+
+pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<GeneralLang, ()>) -> Id {
+    todo!()
 }
