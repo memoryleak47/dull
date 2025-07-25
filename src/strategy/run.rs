@@ -66,6 +66,14 @@ pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EG
     eg_eval(&f.expr, ast, sigma, deref, eg)
 }
 
-fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)>{
+fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+    let c = match deref[&vid].clone() {
+        Semi::L(l) => return eg_match_l(l, arms, deref, ast, eg),
+        Semi::Class(c) => c,
+    };
+    todo!()
+}
+
+fn eg_match_l(l: GeneralLang, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     todo!()
 }
