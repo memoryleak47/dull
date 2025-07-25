@@ -25,8 +25,8 @@ pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
     match expr {
         Expr::Match(m) => {
             let mut out = Vec::new();
-            for (deref, vid) in eg_eval(&m.head, ast, sigma, deref, eg) {
-                out.extend(eg_match(vid, &m.arms, deref, ast, eg));
+            for (deref, vid) in eg_eval(&m.head, ast, sigma.clone(), deref, eg) {
+                out.extend(eg_match(vid, &m.arms, sigma.clone(), deref, ast, eg));
             }
             out
         },
@@ -66,9 +66,9 @@ pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EG
     eg_eval(&f.expr, ast, sigma, deref, eg)
 }
 
-fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     let c = match deref[&vid].clone() {
-        Semi::L(l) => return eg_match_l(l, arms, deref, ast, eg),
+        Semi::L(l) => return eg_match_l(vid, l, arms, sigma, deref, ast, eg),
         Semi::Class(c) => c,
     };
     let mut outs = Vec::new();
@@ -81,15 +81,18 @@ fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<Gen
             *ch = v;
         }
         deref.insert(vid, Semi::L(n.clone()));
-        outs.extend(eg_match_l(n, arms, deref, ast, eg));
+        outs.extend(eg_match_l(vid, n, arms, sigma.clone(), deref, ast, eg));
     }
     outs
 }
 
-fn eg_match_l(l: GeneralLang, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+fn eg_match_l(vid: ValueId, l: GeneralLang, arms: &[Arm], mut sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     for arm in arms {
         match &arm.pattern {
-            Pattern::Var(x) => todo!(),
+            Pattern::Var(x) => {
+                sigma.insert(x.to_string(), vid);
+                return eg_eval(&arm.result, ast, sigma, deref, eg);
+            },
             Pattern::Data(f, args) => {
                 if Symbol::from(f) != l.f || args.len() != l.children.len() { continue }
 
