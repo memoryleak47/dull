@@ -71,7 +71,19 @@ fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<Gen
         Semi::L(l) => return eg_match_l(l, arms, deref, ast, eg),
         Semi::Class(c) => c,
     };
-    todo!()
+    let mut outs = Vec::new();
+    for n in &eg[c.into()].nodes {
+        let mut n = n.clone();
+        let mut deref = deref.clone();
+        for ch in n.children_mut() {
+            let v = ValueId::from(deref.len());
+            deref.insert(v, Semi::Class((*ch).into()));
+            *ch = <_>::from(v);
+        }
+        deref.insert(vid, Semi::L(n.clone()));
+        outs.extend(eg_match_l(n, arms, deref, ast, eg));
+    }
+    outs
 }
 
 fn eg_match_l(l: GeneralLang, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {

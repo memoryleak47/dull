@@ -2,7 +2,7 @@ use crate::*;
 
 #[derive(Hash, PartialOrd, Ord, PartialEq, Eq, Clone, Debug)]
 pub enum Semi {
-    Class(usize), // this usize is conceptually an `Id`!
+    Class(usize),
     L(GeneralLang),
 }
 
