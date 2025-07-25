@@ -15,7 +15,7 @@ pub use strategy::*;
 
 use std::fs::File;
 use std::io::Read;
-pub use egg::{Language, define_language, Id, Symbol, Rewrite, Searcher, Applier, EGraph, SearchMatches, Var, Subst, PatternAst, RecExpr};
+pub use egg::{Language, define_language, Id, Symbol, Rewrite, Searcher, Applier, EGraph, SearchMatches, Var, Subst, PatternAst, RecExpr, SymbolLang};
 use std::collections::HashMap as Map;
 
 fn load_file(filename: &str) -> String {

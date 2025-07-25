@@ -3,12 +3,12 @@ use crate::*;
 #[derive(Hash, PartialOrd, Ord, PartialEq, Eq, Clone, Debug)]
 pub enum Semi {
     Class(Id), // NOTE: this Id is not a child!
-    L(GeneralLang),
+    L(SymbolLang),
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub enum Discr {
-    L(<GeneralLang as Language>::Discriminant),
+    L(<SymbolLang as Language>::Discriminant),
     Class,
 }
 
@@ -42,7 +42,7 @@ impl Language for Semi {
     }
 }
 
-pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<GeneralLang, ()>) -> Id {
+pub fn add_semi(semi: RecExpr<Semi>, eg: &mut EGraph<SymbolLang, ()>) -> Id {
     // maps "semi indices" to "e-graph indices".
     let mut ids: Vec<Id> = Vec::new();
 

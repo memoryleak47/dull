@@ -5,7 +5,7 @@ pub type ValueId = Id;
 pub type Sigma = Map<String, ValueId>; // same as var_ctxt in previous impl.
 pub type Deref = Map<ValueId, Semi>; // Children of Semi are ValueIds again.
 
-fn eval_args(args: &[Expr], ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, Vec<ValueId>)> {
+fn eval_args(args: &[Expr], ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, Vec<ValueId>)> {
     let mut states: Vec<(Deref, /*args*/Vec<ValueId>)> = vec![(deref, Vec::new())];
     for a in args.iter() {
         states = states.into_iter().map(|(deref, args)| {
@@ -21,7 +21,7 @@ fn eval_args(args: &[Expr], ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
     states
 }
 
-pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
     match expr {
         Expr::Match(m) => {
             let mut out = Vec::new();
@@ -34,8 +34,8 @@ pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
             let states = eval_args(args, ast, sigma, deref, eg);
             states.into_iter().map(|(mut deref, args)| {
                 let vid = ValueId::from(deref.len());
-                let g = GeneralLang {
-                    f: Symbol::from(s),
+                let g = SymbolLang {
+                    op: Symbol::from(s),
                     children: args.into(),
                 };
                 deref.insert(vid, Semi::L(g));
@@ -55,7 +55,7 @@ pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
     }
 }
 
-pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
     let f = ast.fns.iter().find(|x| x.name == name).unwrap();
 
     let mut sigma = Sigma::new();
@@ -66,7 +66,7 @@ pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EG
     eg_eval(&f.expr, ast, sigma, deref, eg)
 }
 
-fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
     let c = match deref[&vid].clone() {
         Semi::L(l) => return eg_match_l(vid, l, arms, sigma, deref, ast, eg),
         Semi::Class(c) => c,
@@ -86,7 +86,7 @@ fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, e
     outs
 }
 
-fn eg_match_l(vid: ValueId, l: GeneralLang, arms: &[Arm], mut sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
+fn eg_match_l(vid: ValueId, l: SymbolLang, arms: &[Arm], mut sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
     for arm in arms {
         match &arm.pattern {
             Pattern::Var(x) => {
@@ -94,7 +94,7 @@ fn eg_match_l(vid: ValueId, l: GeneralLang, arms: &[Arm], mut sigma: Sigma, dere
                 return eg_eval(&arm.result, ast, sigma, deref, eg);
             },
             Pattern::Data(f, args) => {
-                if Symbol::from(f) != l.f || args.len() != l.children.len() { continue }
+                if Symbol::from(f) != l.op || args.len() != l.children.len() { continue }
 
                 for (x, v) in args.iter().zip(l.children()) {
                     sigma.insert(x.to_string(), *v);

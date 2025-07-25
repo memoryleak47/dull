@@ -7,9 +7,6 @@ use std::str::FromStr;
 mod semi;
 pub use semi::*;
 
-mod general;
-pub use general::*;
-
 mod run;
 pub use run::*;
 
@@ -41,7 +38,7 @@ struct DullInfo {
     eqs: Vec<[RecExpr<Semi>; 2]>,
 }
 
-pub fn mk_dull_rewrite(a: Ast) -> Rewrite<GeneralLang, ()> {
+pub fn mk_dull_rewrite(a: Ast) -> Rewrite<SymbolLang, ()> {
     let (sender, receiver) = channel::<DullInfo>();
     let sender = Mutex::new(sender);
     let receiver = Mutex::new(receiver);
@@ -56,13 +53,13 @@ pub fn mk_dull_rewrite(a: Ast) -> Rewrite<GeneralLang, ()> {
     Rewrite::new("dull", searcher, applier).unwrap()
 }
 
-impl Searcher<GeneralLang, ()> for DullSearcher {
+impl Searcher<SymbolLang, ()> for DullSearcher {
     fn search_eclass_with_limit(
         &self,
-        egraph: &EGraph<GeneralLang, ()>,
+        egraph: &EGraph<SymbolLang, ()>,
         eclass: Id,
         limit: usize,
-    ) -> Option<SearchMatches<'_, GeneralLang>> {
+    ) -> Option<SearchMatches<'_, SymbolLang>> {
         let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
         let mut deref = Deref::new();
         let vid = ValueId::from(0);
@@ -89,13 +86,13 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
     fn vars(&self) -> Vec<Var> { Vec::new() }
 }
 
-impl Applier<GeneralLang, ()> for DullApplier {
+impl Applier<SymbolLang, ()> for DullApplier {
    fn apply_one(
         &self,
-        egraph: &mut EGraph<GeneralLang, ()>,
+        egraph: &mut EGraph<SymbolLang, ()>,
         eclass: Id,
         subst: &Subst,
-        searcher_ast: Option<&PatternAst<GeneralLang>>,
+        searcher_ast: Option<&PatternAst<SymbolLang>>,
         rule_name: Symbol,
     ) -> Vec<Id> {
         let info = self.receiver.lock().unwrap().recv().unwrap();
