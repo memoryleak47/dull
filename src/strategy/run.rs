@@ -87,5 +87,16 @@ fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<Gen
 }
 
 fn eg_match_l(l: GeneralLang, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
-    todo!()
+    for arm in arms {
+        match &arm.pattern {
+            Pattern::Var(x) => todo!(),
+            Pattern::Data(f, args) => {
+                if Symbol::from(f) != l.f || args.len() != l.children.len() { continue }
+
+                todo!()
+            },
+        }
+    }
+
+    panic!("non-exhaustive match!")
 }
