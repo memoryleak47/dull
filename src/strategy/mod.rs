@@ -88,7 +88,7 @@ impl Searcher<SymbolLang, ()> for DullSearcher {
 fn deref_extract(vid: ValueId, deref: &Deref) -> RecExpr<Semi> {
     match &deref[&vid] {
         Semi::Class(c) => RecExpr::from(vec![Semi::Class(*c)]),
-        Semi::L(l) => todo!(),
+        Semi::L(l) => Semi::L(l.clone()).join_recexprs(|i| deref_extract(i, deref)),
     }
 }
 
