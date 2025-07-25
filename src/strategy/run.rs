@@ -14,6 +14,6 @@ pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
     }
 }
 
-pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast) -> Vec<(Deref, ValueId)> {
+pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     todo!()
 }

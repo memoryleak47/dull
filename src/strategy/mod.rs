@@ -68,13 +68,11 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         limit: usize,
     ) -> Option<SearchMatches<'_, GeneralLang>> {
         let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
-        let mut sigma = Sigma::new();
         let mut deref = Deref::new();
         let vid = ValueId::from(0);
-        sigma.insert("x".to_string(), vid);
         let semi = Semi::Class(usize::from(eclass));
         deref.insert(vid, semi.clone());
-        let o = eg_eval(&expr, &self.ast, sigma, deref, egraph);
+        let o = eg_call_fn("main", &[vid], deref, &self.ast, egraph);
 
         let mut eqs = Vec::new();
 
