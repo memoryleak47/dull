@@ -60,19 +60,18 @@ impl Searcher<SymbolLang, ()> for DullSearcher {
         eclass: Id,
         limit: usize,
     ) -> Option<SearchMatches<'_, SymbolLang>> {
-        let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
         let mut deref = Deref::new();
         let vid = ValueId::from(0);
         let semi = Semi::Class(eclass);
         deref.insert(vid, semi.clone());
-        let o = eg_call_fn("main", &[vid], deref, &self.ast, egraph);
+        let outs = eg_call_fn("main", &[vid], deref, &self.ast, egraph);
 
         let mut eqs = Vec::new();
 
-        let mut re = RecExpr::default();
-        re.add(semi);
-        for (deref, x) in o {
-            eqs.push([re.clone(), todo!()]);
+        for (deref, x) in outs {
+            let lhs = RecExpr::from(vec![semi.clone()]);
+            let rhs = deref_extract(x, &deref);
+            eqs.push([lhs, rhs]);
         }
         self.sender.lock().unwrap().send(DullInfo { eqs });
         Some(SearchMatches {
@@ -84,6 +83,10 @@ impl Searcher<SymbolLang, ()> for DullSearcher {
 
     // I'm not using egg variables at all!
     fn vars(&self) -> Vec<Var> { Vec::new() }
+}
+
+fn deref_extract(vid: ValueId, deref: &Deref) -> RecExpr<Semi> {
+    todo!()
 }
 
 impl Applier<SymbolLang, ()> for DullApplier {
