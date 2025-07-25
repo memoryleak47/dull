@@ -70,7 +70,7 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
         let mut deref = Deref::new();
         let vid = ValueId::from(0);
-        let semi = Semi::Class(usize::from(eclass));
+        let semi = Semi::Class(eclass);
         deref.insert(vid, semi.clone());
         let o = eg_call_fn("main", &[vid], deref, &self.ast, egraph);
 
