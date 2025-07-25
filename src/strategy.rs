@@ -3,6 +3,7 @@ use egg::*;
 
 use std::sync::mpsc::*;
 use std::sync::Mutex;
+use std::str::FromStr;
 
 define_language! {
     enum GeneralLang {
@@ -49,7 +50,11 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
     ) -> Option<SearchMatches<'_, GeneralLang>> { todo!() }
 
     fn vars(&self) -> Vec<Var> {
-        todo!()
+        for x in &self.ast.fns {
+            if x.name != "main" { continue }
+            return x.args.iter().map(|x| Var::from_str(&*x).unwrap()).collect();
+        }
+        panic!("mo main FnDef found!")
     }
 }
 
