@@ -24,7 +24,18 @@ fn eval_args(args: &[Expr], ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
 pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     match expr {
         Expr::Match(m) => todo!(),
-        Expr::DataConstr(s, args) => todo!(),
+        Expr::DataConstr(s, args) => {
+            let states = eval_args(args, ast, sigma, deref, eg);
+            states.into_iter().map(|(mut deref, args)| {
+                let vid1 = ValueId::from(deref.len());
+                deref.insert(vid1, Semi::L(GeneralLang::Constant(Symbol::from(s))));
+
+                let vid2 = ValueId::from(deref.len());
+                let args = std::iter::once(vid1).chain(args.into_iter()).collect();
+                deref.insert(vid2, Semi::L(GeneralLang::App(args)));
+                (deref, vid2)
+            }).collect()
+        },
         Expr::FnCall(f, args) => {
             let states = eval_args(args, ast, sigma, deref, eg);
 
