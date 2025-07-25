@@ -14,6 +14,6 @@ define_language! {
 type Sigma = Map<String, ValueId>;
 type Deref = Map<ValueId, RecExpr<Semi>>;
 
-pub fn eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Sigma, RecExpr<Semi>)> {
+pub fn eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Sigma, Deref, RecExpr<Semi>)> {
     todo!()
 }
