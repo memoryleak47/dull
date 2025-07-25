@@ -96,7 +96,10 @@ fn eg_match_l(vid: ValueId, l: GeneralLang, arms: &[Arm], mut sigma: Sigma, dere
             Pattern::Data(f, args) => {
                 if Symbol::from(f) != l.f || args.len() != l.children.len() { continue }
 
-                todo!()
+                for (x, v) in args.iter().zip(l.children()) {
+                    sigma.insert(x.to_string(), *v);
+                }
+                return eg_eval(&arm.result, ast, sigma, deref, eg);
             },
         }
     }
