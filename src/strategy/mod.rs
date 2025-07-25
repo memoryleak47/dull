@@ -1,12 +1,14 @@
 use crate::*;
-use egg::*;
 
 use std::sync::mpsc::*;
 use std::sync::Mutex;
 use std::str::FromStr;
 
+mod run;
+pub use run::*;
+
 define_language! {
-    enum GeneralLang {
+    pub enum GeneralLang {
         Constant(Symbol),
         "app" = App(Box<[Id]>), // (f, arg1, ...)
     }
@@ -26,7 +28,7 @@ struct DullApplier {
 
 struct DullInfo;
 
-fn mk_dull_rewrite(a: Ast) -> Rewrite<GeneralLang, ()> {
+pub fn mk_dull_rewrite(a: Ast) -> Rewrite<GeneralLang, ()> {
     let (sender, receiver) = channel::<DullInfo>();
     let sender = Mutex::new(sender);
     let receiver = Mutex::new(receiver);
