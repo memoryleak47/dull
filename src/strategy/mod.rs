@@ -70,15 +70,18 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
         let mut sigma = Sigma::new();
         let mut deref = Deref::new();
-        sigma.insert("x".to_string(), 0);
-        let mut re = RecExpr::default();
-        re.add(Semi::Class(usize::from(eclass)));
-        deref.insert(0, re.clone());
-        let o = eval(&expr, &self.ast, sigma, deref, egraph);
+        let vid = ValueId::from(0);
+        sigma.insert("x".to_string(), vid);
+        let semi = Semi::Class(usize::from(eclass));
+        deref.insert(vid, semi.clone());
+        let o = eg_eval(&expr, &self.ast, sigma, deref, egraph);
 
         let mut eqs = Vec::new();
-        for (_, _, x) in o {
-            eqs.push([re.clone(), x]);
+
+        let mut re = RecExpr::default();
+        re.add(semi);
+        for (deref, x) in o {
+            eqs.push([re.clone(), todo!()]);
         }
         self.sender.lock().unwrap().send(DullInfo { eqs });
         Some(SearchMatches {

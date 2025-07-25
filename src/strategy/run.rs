@@ -1,17 +1,19 @@
 use crate::*;
 
-pub type ValueId = usize;
+pub type ValueId = Id;
 
-// TODO: open question:
-// Should sigma only map pvars from main, or generally any variable from context?
-pub type Sigma = Map<String, ValueId>;
-pub type Deref = Map<ValueId, RecExpr<Semi>>;
+pub type Sigma = Map<String, ValueId>; // same as var_ctxt in previous impl.
+pub type Deref = Map<ValueId, Semi>; // Children of Semi are ValueIds again.
 
-pub fn eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Sigma, Deref, RecExpr<Semi>)> {
+pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     match expr {
         Expr::Match(m) => todo!(),
         Expr::DataConstr(s, args) => todo!(),
         Expr::FnCall(f, args) => todo!(),
-        Expr::Var(s) => todo!(),
+        Expr::Var(s) => vec![(deref, sigma[s])]
     }
+}
+
+pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast) -> Vec<(Deref, ValueId)> {
+    todo!()
 }
