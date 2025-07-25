@@ -1,9 +1,9 @@
 use crate::*;
 
-type ValueId = usize;
+pub type ValueId = usize;
 
 define_language! {
-    enum Semi {
+    pub enum Semi {
         Class(usize), // this usize is conceptually an `Id`!
         "term" = L(Id),
     }
@@ -11,8 +11,8 @@ define_language! {
 
 // TODO: open question:
 // Should sigma only map pvars from main, or generally any variable from context?
-type Sigma = Map<String, ValueId>;
-type Deref = Map<ValueId, RecExpr<Semi>>;
+pub type Sigma = Map<String, ValueId>;
+pub type Deref = Map<ValueId, RecExpr<Semi>>;
 
 pub fn eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Sigma, Deref, RecExpr<Semi>)> {
     todo!()

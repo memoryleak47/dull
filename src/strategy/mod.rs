@@ -61,7 +61,17 @@ impl Searcher<GeneralLang, ()> for DullSearcher {
         egraph: &EGraph<GeneralLang, ()>,
         eclass: Id,
         limit: usize,
-    ) -> Option<SearchMatches<'_, GeneralLang>> { todo!() }
+    ) -> Option<SearchMatches<'_, GeneralLang>> {
+        let expr = Expr::FnCall("main".to_string(), vec![Expr::Var("x".to_string())]);
+        let mut sigma = Sigma::new();
+        let mut deref = Deref::new();
+        sigma.insert("x".to_string(), 0);
+        let mut re = RecExpr::default();
+        re.add(Semi::Class(usize::from(eclass)));
+        deref.insert(0, re);
+        let _ = eval(&expr, &self.ast, sigma, deref, egraph);
+        todo!()
+    }
 
     // I'm not using egg variables at all!
     fn vars(&self) -> Vec<Var> { Vec::new() }
