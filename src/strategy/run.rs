@@ -23,7 +23,13 @@ fn eval_args(args: &[Expr], ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<G
 
 pub fn eg_eval(expr: &Expr, ast: &Ast, sigma: Sigma, deref: Deref, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)> {
     match expr {
-        Expr::Match(m) => todo!(),
+        Expr::Match(m) => {
+            let mut out = Vec::new();
+            for (deref, vid) in eg_eval(&m.head, ast, sigma, deref, eg) {
+                out.extend(eg_match(vid, &m.arms, deref, ast, eg));
+            }
+            out
+        },
         Expr::DataConstr(s, args) => {
             let states = eval_args(args, ast, sigma, deref, eg);
             states.into_iter().map(|(mut deref, args)| {
@@ -58,4 +64,8 @@ pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EG
     }
 
     eg_eval(&f.expr, ast, sigma, deref, eg)
+}
+
+fn eg_match(vid: ValueId, arms: &[Arm], deref: Deref, ast: &Ast, eg: &EGraph<GeneralLang, ()>) -> Vec<(Deref, ValueId)>{
+    todo!()
 }
