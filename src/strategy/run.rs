@@ -92,7 +92,7 @@ fn eg_match_pat(vid: ValueId, pat: &Pattern, mut sigma: Sigma, deref: Deref, eg:
             sigma.insert(v.to_string(), vid);
             vec![(deref, Some(sigma))]
         },
-        Pattern::Data(constr, args) => {
+        Pattern::Data(constr, subpats) => {
             // branch 'vid' up.
             let mut cases: Vec<Deref> = Vec::new();
             if let Semi::Class(c) = &deref[&vid] {
@@ -113,22 +113,27 @@ fn eg_match_pat(vid: ValueId, pat: &Pattern, mut sigma: Sigma, deref: Deref, eg:
             let mut outs = Vec::new();
             for deref in cases {
                 let Semi::L(l) = &deref[&vid] else { unreachable!() };
-                if Symbol::from(constr) != l.op || args.len() != l.children.len() {
+                if Symbol::from(constr) != l.op || subpats.len() != l.children.len() {
                     outs.push((deref, None));
                     continue;
                 }
 
-                let mut os = vec![(deref.clone(), Some(sigma.clone()))];
-                for (p, x) in args.iter().zip(l.children()) {
-                    for (deref, opt_sigma) in os.split_off(0) {
-                        if let Some(sigma) = opt_sigma {
-                            os.extend(eg_match_pat(*x, p, sigma, deref, eg));
-                        } else {
-                            os.push((deref, None));
+                // The current partially matched state.
+                // Some variables might have been found (thus we require sigma).
+                let mut nexts = vec![(deref.clone(), sigma.clone())];
+                for (p, x) in subpats.iter().zip(l.children()) {
+                    for (deref, sigma) in nexts.split_off(0) {
+                        for (deref, opt_sigma) in eg_match_pat(*x, p, sigma, deref, eg) {
+                            if let Some(sigma) = opt_sigma {
+                                nexts.push((deref, sigma));
+                            } else {
+                                // we push to `outs` and not `nexts`, as we don't want to pattern match the remaining children, if one match already failed.
+                                outs.push((deref, None));
+                            }
                         }
                     }
                 }
-                outs.extend(os);
+                outs.extend(nexts.into_iter().map(|(deref, sigma)| (deref, Some(sigma))));
             }
             outs
         },
