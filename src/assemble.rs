@@ -43,9 +43,9 @@ fn assemble_pattern(mut tokens: &[Token]) -> (Pattern, &[Token]) {
         let i = i.to_string();
         tokens = &tokens[1..];
         if tokens[0] == Token::LParen {
-            let (vars, t2) = assemble_varlist(tokens);
+            let (pats, t2) = assemble_pattern_list(tokens);
             tokens = t2;
-            (Pattern::Data(i, vars), tokens)
+            (Pattern::Data(i, pats), tokens)
         } else {
             (Pattern::Data(i, vec![]), tokens)
         }
@@ -108,6 +108,32 @@ fn assemble_expr_list(mut tokens: &[Token]) -> (Vec<Expr>, &[Token]) {
         if tokens[0] == Token::RParen {
             tokens = &tokens[1..];
             return (exprs, tokens);
+        }
+
+        assert_eq!(tokens[0], Token::Comma);
+        tokens = &tokens[1..];
+    }
+}
+
+fn assemble_pattern_list(mut tokens: &[Token]) -> (Vec<Pattern>, &[Token]) {
+    let mut patterns = Vec::new();
+
+    assert_eq!(tokens[0], Token::LParen);
+    tokens = &tokens[1..];
+
+    if tokens[0] == Token::RParen {
+        tokens = &tokens[1..];
+        return (patterns, tokens);
+    }
+
+    loop {
+        let (pattern, t2) = assemble_pattern(tokens);
+        patterns.push(pattern);
+        tokens = t2;
+
+        if tokens[0] == Token::RParen {
+            tokens = &tokens[1..];
+            return (patterns, tokens);
         }
 
         assert_eq!(tokens[0], Token::Comma);

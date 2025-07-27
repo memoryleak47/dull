@@ -67,42 +67,70 @@ pub fn eg_call_fn(name: &str, args: &[ValueId], deref: Deref, ast: &Ast, eg: &EG
 }
 
 fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
-    let c = match deref[&vid].clone() {
-        Semi::L(l) => return eg_match_l(vid, l, arms, sigma, deref, ast, eg),
-        Semi::Class(c) => c,
-    };
-    let mut outs = Vec::new();
-    for n in &eg[c].nodes {
-        let mut n = n.clone();
-        let mut deref = deref.clone();
-        for ch in n.children_mut() {
-            let v = ValueId::from(deref.len());
-            deref.insert(v, Semi::Class(*ch));
-            *ch = v;
+    let mut outs: Vec<(Deref, ValueId)> = Vec::new();
+
+    // The states sent to the next match arm.
+    let mut nexts: Vec<Deref> = vec![deref];
+
+    for arm in arms {
+        for deref in nexts.split_off(0) {
+            for (deref, opt_sigma) in eg_match_pat(vid, &arm.pattern, sigma.clone(), deref, eg) {
+                match opt_sigma {
+                    Some(sigma) => outs.extend(eg_eval(&arm.result, ast, sigma, deref, eg)),
+                    None => nexts.push(deref),
+                }
+            }
         }
-        deref.insert(vid, Semi::L(n.clone()));
-        outs.extend(eg_match_l(vid, n, arms, sigma.clone(), deref, ast, eg));
     }
     outs
 }
 
-fn eg_match_l(vid: ValueId, l: SymbolLang, arms: &[Arm], mut sigma: Sigma, deref: Deref, ast: &Ast, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, ValueId)> {
-    for arm in arms {
-        match &arm.pattern {
-            Pattern::Var(x) => {
-                sigma.insert(x.to_string(), vid);
-                return eg_eval(&arm.result, ast, sigma, deref, eg);
-            },
-            Pattern::Data(f, args) => {
-                if Symbol::from(f) != l.op || args.len() != l.children.len() { continue }
-
-                for (x, v) in args.iter().zip(l.children()) {
-                    sigma.insert(x.to_string(), *v);
+// If the returned Sigma is None, the pattern didn't match in that case.
+fn eg_match_pat(vid: ValueId, pat: &Pattern, mut sigma: Sigma, deref: Deref, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, Option<Sigma>)> {
+    match pat {
+        Pattern::Var(v) => {
+            sigma.insert(v.to_string(), vid);
+            vec![(deref, Some(sigma))]
+        },
+        Pattern::Data(constr, args) => {
+            // branch 'vid' up.
+            let mut cases: Vec<Deref> = Vec::new();
+            if let Semi::Class(c) = &deref[&vid] {
+                for n in &eg[*c].nodes {
+                    let mut n = n.clone();
+                    let mut deref = deref.clone();
+                    for ch in n.children_mut() {
+                        let v = ValueId::from(deref.len());
+                        deref.insert(v, Semi::Class(*ch));
+                        *ch = v;
+                    }
+                    deref.insert(vid, Semi::L(n.clone()));
+                    cases.push(deref);
                 }
-                return eg_eval(&arm.result, ast, sigma, deref, eg);
-            },
-        }
-    }
+            } else { cases.push(deref); };
 
-    Vec::new() // non-exhaustive match aborts the thread.
+            // match on these options.
+            let mut outs = Vec::new();
+            for deref in cases {
+                let Semi::L(l) = &deref[&vid] else { unreachable!() };
+                if Symbol::from(constr) != l.op || args.len() != l.children.len() {
+                    outs.push((deref, None));
+                    continue;
+                }
+
+                let mut os = vec![(deref.clone(), Some(sigma.clone()))];
+                for (p, x) in args.iter().zip(l.children()) {
+                    for (deref, opt_sigma) in os.split_off(0) {
+                        if let Some(sigma) = opt_sigma {
+                            os.extend(eg_match_pat(*x, p, sigma, deref, eg));
+                        } else {
+                            os.push((deref, None));
+                        }
+                    }
+                }
+                outs.extend(os);
+            }
+            outs
+        },
+    }
 }

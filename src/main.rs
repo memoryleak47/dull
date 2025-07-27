@@ -7,9 +7,6 @@ pub use tokenize::*;
 mod assemble;
 pub use assemble::*;
 
-mod run;
-pub use run::*;
-
 mod strategy;
 pub use strategy::*;
 

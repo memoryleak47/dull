@@ -22,7 +22,7 @@ pub struct Match {
 #[derive(Debug, Clone)]
 pub enum Pattern {
     Var(String),
-    Data(String, /*vars: */ Vec<String>),
+    Data(String, Vec<Pattern>),
 }
 
 #[derive(Debug, Clone)]
