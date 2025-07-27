@@ -74,7 +74,7 @@ fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, e
 
     for arm in arms {
         for deref in nexts.split_off(0) {
-            for (deref, opt_sigma) in eg_match_pat(vid, &arm.pattern, sigma.clone(), deref, eg) {
+            for (deref, opt_sigma) in eg_match_pat(vid, &arm.pattern, Sigma::new(), deref, eg) {
                 match opt_sigma {
                     Some(subsigma) => {
                         let mut sigma = sigma.clone();
