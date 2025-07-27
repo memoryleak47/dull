@@ -76,7 +76,11 @@ fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, e
         for deref in nexts.split_off(0) {
             for (deref, opt_sigma) in eg_match_pat(vid, &arm.pattern, sigma.clone(), deref, eg) {
                 match opt_sigma {
-                    Some(sigma) => outs.extend(eg_eval(&arm.result, ast, sigma, deref, eg)),
+                    Some(subsigma) => {
+                        let mut sigma = sigma.clone();
+                        sigma.extend(subsigma);
+                        outs.extend(eg_eval(&arm.result, ast, sigma, deref, eg));
+                    },
                     None => nexts.push(deref),
                 }
             }
@@ -86,11 +90,19 @@ fn eg_match(vid: ValueId, arms: &[Arm], sigma: Sigma, deref: Deref, ast: &Ast, e
 }
 
 // If the returned Sigma is None, the pattern didn't match in that case.
+// The returned Sigma only contains freshly matched variables. Not the old context.
 fn eg_match_pat(vid: ValueId, pat: &Pattern, mut sigma: Sigma, deref: Deref, eg: &EGraph<SymbolLang, ()>) -> Vec<(Deref, Option<Sigma>)> {
     match pat {
         Pattern::Var(v) => {
-            sigma.insert(v.to_string(), vid);
-            vec![(deref, Some(sigma))]
+            // This checks that a pattern that matches the same variable multiple times,
+            // works out as intended.
+            // patterns like D(x, x).
+            // TODO I think sometimes both things can be equal, but they don't have the same ValueId yet! unification of ValueIds would be required here I fear.
+            if let Some(old) = sigma.insert(v.to_string(), vid) && old != vid {
+                vec![(deref, None)]
+            } else {
+                vec![(deref, Some(sigma))]
+            }
         },
         Pattern::Data(constr, subpats) => {
             // branch 'vid' up.
