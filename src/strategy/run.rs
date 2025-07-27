@@ -104,5 +104,5 @@ fn eg_match_l(vid: ValueId, l: SymbolLang, arms: &[Arm], mut sigma: Sigma, deref
         }
     }
 
-    panic!("non-exhaustive match!")
+    Vec::new() // non-exhaustive match aborts the thread.
 }
